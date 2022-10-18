@@ -3,6 +3,8 @@ import TodoForm from "./components/TodoForm";
 import TodoList from "./components/TodoList";
 import Filters from "./components/Filters";
 import { v4 as uuidv4 } from "uuid";
+import ThemeProvider from "./components/TodoProvider";
+import { useTodoTheme } from "./context/todo/context";
 
 const initialTodos = [
   { id: uuidv4(), name: "Eat", isDone: true },
@@ -46,6 +48,34 @@ const filterReducer = (state: string, action: any) => {
 
 export const TodoContext = createContext<any>(null);
 
+const MainLayout = () => {
+  const { todosLength, todosList } = useTodoTheme();
+  console.log(todosLength, "todosLength");
+  const [todos, dispatchTodos] = useReducer(todoReducer, initialTodos);
+  const [filter, dispatchFilter] = useReducer(filterReducer, "ALL");
+
+  const filteredTodos = todos.filter((todo) => {
+    if (filter === "ALL") {
+      return true;
+    }
+    if (filter === "ACTIVE" && !todo.isDone) {
+      return true;
+    }
+    if (filter === "COMPLETED" && todo.isDone) {
+      return true;
+    }
+    return false;
+  });
+
+  return (
+    <div className="todoapp stack-large">
+      <TodoForm />
+      <Filters dispatch={dispatchFilter} />
+      <h2 id="list-heading">{filteredTodos.length} tasks remaining</h2>
+      <TodoList todos={filteredTodos} />
+    </div>
+  );
+};
 const App = () => {
   const [todos, dispatchTodos] = useReducer(todoReducer, initialTodos);
   const [filter, dispatchFilter] = useReducer(filterReducer, "ALL");
@@ -64,16 +94,20 @@ const App = () => {
   });
 
   return (
-    <TodoContext.Provider value={dispatchTodos}>
-      <div className="todoapp stack-large">
-        <TodoForm></TodoForm>
-        <Filters dispatch={dispatchFilter}></Filters>
-        <h2 id="list-heading">{filteredTodos.length} tasks remaining</h2>
-        <TodoList
-          todos={filteredTodos}
-        ></TodoList>
-      </div>
-    </TodoContext.Provider>
+    <React.Fragment>
+      <TodoContext.Provider value={dispatchTodos}>
+        <div className="todoapp stack-large">
+          <TodoForm />
+          <Filters dispatch={dispatchFilter} />
+          <h2 id="list-heading">{filteredTodos.length} tasks remaining</h2>
+          <TodoList todos={filteredTodos} />
+        </div>
+      </TodoContext.Provider>
+      {/* ---------------------------------------------------------------------------------------------- */}
+      <ThemeProvider>
+        <MainLayout />
+      </ThemeProvider>
+    </React.Fragment>
   );
 };
 
