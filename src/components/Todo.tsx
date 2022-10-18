@@ -1,32 +1,35 @@
 import React, { useState, useContext } from "react";
-import { TodoContext } from '../App';
-import { ITodoItem } from "../interface";
-
-const Todo = ({ todo }: ITodoItem) => {
-  const [isEditing, setEditing] = useState(false);
-  const [newName, setNewName] = useState('');
+import { TodoContext } from "../App";
+import { TTodo } from "../types/todo";
+const Todo: React.FC<{ todo: TTodo }> = ({ todo }): JSX.Element => {
+  const [isEditing, setEditing] = useState<boolean>(false);
+  const [newName, setNewName] = useState<string>("");
 
   const dispatch = useContext(TodoContext);
 
   const handleToggle = () => {
     dispatch({
       id: todo.id,
-      type: 'TOGGLE'
+      type: "TOGGLE",
     });
   };
 
   const handleDelete = () => {
     dispatch({
       id: todo.id,
-      type: 'REMOVE'
-    })
-  }
+      type: "REMOVE",
+    });
+  };
 
-  const handleNameChange = (e: any) => {
-    setNewName(e.target.value);
-  }
+  const handleNameChange = React.useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const { value } = e.target;
+      setNewName(value);
+    },
+    []
+  );
 
-  const handleUpdate = (e: any) => {
+  const handleUpdate = (e: React.ChangeEvent<HTMLFormElement>) => {
     e.preventDefault();
     dispatch({ type: "UPDATE", id: todo.id, newName });
     setNewName("");
@@ -39,7 +42,13 @@ const Todo = ({ todo }: ITodoItem) => {
         <label className="todo-label" htmlFor={todo.name}>
           New name for {todo.name}
         </label>
-        <input value={newName} onChange={handleNameChange} id={todo.id} className="todo-text" type="text" />
+        <input
+          value={newName}
+          onChange={handleNameChange}
+          id={todo.id}
+          className="todo-text"
+          type="text"
+        />
       </div>
       <div className="btn-group">
         <button
